@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+model User {
+    id String @default(uuid()) @id
+    name String
+    email String @unique
+    birthDate DateTime @db.Date()
+    password String
+    gender Gender
+    createdAt DateTime @db.Timestamptz() @default(now())
+    updatedAt DateTime @db.Timestamptz() @updatedAt
+    token Token[]
+    log Log[]
+    recommendation Recommendation[]
+}
+
+model Token {
+  id String @default(uuid()) @id
+  str String
+  createdAt DateTime @db.Timestamptz() @default(now())
+  updatedAt DateTime @db.Timestamptz() @updatedAt
+  expiredAt DateTime @db.Timestamptz()
+  userId String 
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Log {
+  id String @default(uuid()) @id
+  emotion String
+  date DateTime @db.Date()
+  createdAt DateTime @db.Timestamptz() @default(now())
+  updatedAt DateTime @db.Timestamptz() @updatedAt
+  userId String 
+  user User @relation(fields: [userId], references: [id])
+  activity Activity[]
+}
+
+model Activity {
+  id String @default(uuid()) @id
+  logId String
+  log Log @relation(fields: [logId], references: [id])
+  description String
+  createdAt DateTime @db.Timestamptz() @default(now())
+}
+
+model Recommendation {
+  id String @default(uuid()) @id
+  emotion String
+  createdAt DateTime @db.Timestamptz() @default(now())
+  activities String[]
+  userId String 
+  user User @relation(fields: [userId], references: [id])
+}

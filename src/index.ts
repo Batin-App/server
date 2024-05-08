@@ -1,15 +1,21 @@
-import express, { Express, Request, Response } from "express";
-const dotenv = require('dotenv');
+import express, { Express } from 'express'
+import dotenv from 'dotenv'
+import initHandler from './handler'
+import { PrismaClient } from '@prisma/client'
 
-dotenv.config();
+dotenv.config()
 
 const app = express()
 const port = process.env.PORT || 3000
+const prisma = new PrismaClient()
 
-app.get('/', (req: Request, res: Response) => {
-  res.send('Hello World!')
-})
+const createServer = async () => {
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+  initHandler(app, prisma)
+
+  app.listen(port, () => {
+    console.log(`[server]: Server is running at http://localhost:${port}`)
+  })
+}
+
+createServer()

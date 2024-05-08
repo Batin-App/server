@@ -27,14 +27,15 @@ model User {
     gender Gender
     createdAt DateTime @db.Timestamptz() @default(now())
     updatedAt DateTime @db.Timestamptz() @updatedAt
-    token Token[]
+    session Session[]
     log Log[]
     recommendation Recommendation[]
 }
 
-model Token {
+model Session {
   id String @default(uuid()) @id
-  str String
+  token String
+  vector String
   createdAt DateTime @db.Timestamptz() @default(now())
   updatedAt DateTime @db.Timestamptz() @updatedAt
   expiredAt DateTime @db.Timestamptz()

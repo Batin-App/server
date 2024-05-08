@@ -34,8 +34,7 @@ model User {
 
 model Session {
   id String @default(uuid()) @id
-  token String
-  vector String
+  token String @unique
   createdAt DateTime @db.Timestamptz() @default(now())
   updatedAt DateTime @db.Timestamptz() @updatedAt
   expiredAt DateTime @db.Timestamptz()
@@ -44,9 +43,8 @@ model Session {
 }
 
 model Log {
-  id String @default(uuid()) @id
-  emotion String
-  date DateTime @db.Date()
+  date DateTime @db.Date() @id
+  emotion String?
   createdAt DateTime @db.Timestamptz() @default(now())
   updatedAt DateTime @db.Timestamptz() @updatedAt
   userId String 
@@ -56,8 +54,8 @@ model Log {
 
 model Activity {
   id String @default(uuid()) @id
-  logId String
-  log Log @relation(fields: [logId], references: [id])
+  date DateTime @db.Date()
+  log Log @relation(fields: [date], references: [date])
   description String
   createdAt DateTime @db.Timestamptz() @default(now())
 }

@@ -49,7 +49,20 @@ model Log {
   updatedAt DateTime @db.Timestamptz() @updatedAt
   userId String 
   user User @relation(fields: [userId], references: [id])
-  activity Activity[]
+  activities Activity[]
+  emotions LogEmotion[]
+}
+
+model LogEmotion {
+  id String @default(uuid()) @id
+  predictionInput String @default("")
+  predictedEmotion String
+  predictedClass Int
+  probabilities String
+  date DateTime @db.Date()
+  log Log @relation(fields: [date], references: [date])
+  createdAt DateTime @db.Timestamptz() @default(now())
+  updatedAt DateTime @db.Timestamptz() @updatedAt
 }
 
 model Activity {

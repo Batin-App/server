@@ -9,12 +9,7 @@ export const update = async (
     const { email, birthDate, gender } = req.body;
     const { userId } = res.locals
 
-    try {  
-      if (!userId) {
-        res.status(404).json({ message: 'User not found' });
-        return
-      }
-  
+    try {    
       if (!!email) {
         const existingUserWithEmail = await prisma.user.findUnique({
           where: { email }

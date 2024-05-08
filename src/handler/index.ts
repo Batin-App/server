@@ -11,7 +11,7 @@ const initHandler = (app: Express, prisma: PrismaClient) => {
   app.use(bodyParser.json())
 
   app.use('/auth', authHandler(prisma))
-  app.use('/user', userHandler(prisma))
+  app.use('/user', authMiddleware, userHandler(prisma))
   app.use('/logs', authMiddleware, logHandler(prisma))
 }
 

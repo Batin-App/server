@@ -1,23 +1,33 @@
-# Start from a base image with Node.js
+# Set the base image
 FROM node:20-alpine
 
+# Install Yarn
+RUN apk add --no-cache yarn
+
 # Set the working directory in the container
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Copy package.json and package-lock.json to the working directory
-COPY package.json ./
-COPY yarn.lock .
+# Copy the package.json and yarn.lock files to the container
+COPY package*.json yarn.lock ./
 
-# Install dependencies
-RUN yarn install
+# Install the dependencies
+RUN yarn
 
-# Copy the rest of the application code to the working directory
+# Copy the rest of the application to the container
 COPY . .
+
+ARG PORT
+ARG DATABASE_URL
+
+ENV PORT=$PORT
+ENV DATABASE_URL=$DATABASE_URL
+
+RUN npx prisma migrate deploy
 
 RUN yarn build
 
-# Expose the port that your Express app is running on
+# Expose the port on which the application will run
 EXPOSE 3000
 
-# Command to run your application
+# Start the application
 CMD ["yarn", "start"]

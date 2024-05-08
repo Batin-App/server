@@ -6,44 +6,42 @@ export const update = async (
     res: Response,
     prisma: PrismaClient
   ) => {
-    const { currentEmail, newEmail, birthDate, gender } = req.body;
-  
-    try {
-      if (!currentEmail) {
-        return res.status(400).json({ message: 'Missing required fields' });
+    const { email, birthDate, gender } = req.body;
+    const { userId } = res.locals
+
+    try {  
+      if (!userId) {
+        res.status(404).json({ message: 'User not found' });
+        return
       }
   
-      const existingUser = await prisma.user.findUnique({
-        where: { email: currentEmail }
-      });
-  
-      if (!existingUser) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-  
-      if (newEmail && newEmail !== currentEmail) {
+      if (!!email) {
         const existingUserWithEmail = await prisma.user.findUnique({
-          where: { email: newEmail }
+          where: { email }
         });
   
-        if (existingUserWithEmail) {
-          return res.status(409).json({ message: 'Email is already in use' });
+        if (!!existingUserWithEmail) {
+            res.status(409).json({ message: 'Email is already in use' });
+            return
         }
       }
   
       const updatedUser = await prisma.user.update({
-        where: { email: currentEmail },
+        where: { id: userId },
         data: {
-          email: newEmail || existingUser.email,
-          birthDate: birthDate ? new Date(birthDate) : existingUser.birthDate,
-          gender: gender || existingUser.gender
+          ...(email ? { email } : {}),
+          ...(birthDate ? { birthDate: new Date(birthDate) } : {}),
+          ...(gender ? { gender } : {})
         }
       });
-  
-      return res.status(200).json({ user: updatedUser });
+      
+      
+      res.status(200).json({ user: updatedUser });
+      return
     } catch (error) {
       console.error('Error updating user:', error);
-      return res.status(500).json({ message: 'Internal server error' });
+      res.status(500).json({ message: 'Internal server error' });
+      return
     }
   };
   

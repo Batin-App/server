@@ -30,7 +30,6 @@ export const update = async (
         }
       });
       
-      
       res.status(200).json({ user: updatedUser });
       return
     } catch (error) {

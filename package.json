@@ -4,8 +4,8 @@
   "description": "a server for batin application",
   "main": "src/index.js",
   "scripts": {
-    "build": "npx tsc",
-    "start": "node dist/index.js",
+    "build": "npx tsc --outDir build",
+    "start": "node build/index.js",
     "dev": "nodemon src/index.ts"
   },
   "author": "",

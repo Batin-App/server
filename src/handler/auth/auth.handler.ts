@@ -105,7 +105,8 @@ export const register = async (
 
   try {
     if (!email || !password || !gender || !birthDate) {
-      return res.status(400).json({ message: 'Missing required fields' });
+      res.status(400).json({ message: 'Missing required fields' });
+      return
     }
 
     const existingUser = await prisma.user.findUnique({
@@ -113,7 +114,8 @@ export const register = async (
     });
 
     if (existingUser) {
-      return res.status(409).json({ message: 'Email is already in use' });
+      res.status(409).json({ message: 'Email is already in use' });
+      return
     }
 
     const saltRounds = Number.parseInt(process.env.SALT as string) || 10;
@@ -128,9 +130,11 @@ export const register = async (
       }
     });
 
-    return res.status(201).json({ user: newUser });
+    res.status(201).json({ message: "User successfully registered", user: newUser });
+    return
   } catch (error) {
     console.error('Error registering user:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: 'Internal server error' });
+    return
   }
 };

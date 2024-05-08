@@ -4,6 +4,26 @@ import axios from 'axios'
 import { PredictionResponseInterface } from './interface'
 import { EMOTION_CLASSES } from './constant'
 
+export const getLogs = async (
+  req: Request,
+  res: Response,
+  prisma: PrismaClient
+) => {
+  const date = new Date((req.query.date as string) || Date.now())
+  const { userId } = res.locals
+
+  const activities = await prisma.activity.findMany({
+    where: {
+      date,
+      log: {
+        userId,
+      },
+    },
+  })
+
+  res.status(200).json(activities)
+}
+
 export const getLogSummary = async (
   req: Request,
   res: Response,
@@ -54,7 +74,7 @@ export const getLogSummary = async (
       predictedEmotion: EMOTION_CLASSES[predicted_class],
     }
 
-    const {} = await prisma.logEmotion.create({
+    await prisma.logEmotion.create({
       data: {
         date: logDate,
         predictionInput,

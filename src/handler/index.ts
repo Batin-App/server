@@ -4,6 +4,7 @@ import { authHandler } from './auth'
 import bodyParser from 'body-parser'
 import { logHandler } from './log'
 import { authMiddleware } from './commons/middleware/auth.middleware'
+import { recommendationHandler } from './recommendation'
 
 const initHandler = (app: Express, prisma: PrismaClient) => {
   app.use(bodyParser.urlencoded({ extended: false }))
@@ -11,6 +12,7 @@ const initHandler = (app: Express, prisma: PrismaClient) => {
 
   app.use('/auth', authHandler(prisma))
   app.use('/logs', authMiddleware, logHandler(prisma))
+  app.use('/recommendations', authMiddleware, recommendationHandler(prisma))
 }
 
 export default initHandler

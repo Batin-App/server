@@ -1,7 +1,6 @@
 import express from 'express'
 import { PrismaClient } from '@prisma/client'
 import { getLogs, getLogSummary, saveLog } from './log.handler'
-// import {getLogs} from "./log.handler";
 
 const app = express()
 

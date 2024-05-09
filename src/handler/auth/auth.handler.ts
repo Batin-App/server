@@ -95,3 +95,46 @@ export const generateToken = (id: string) => {
     token: `${encryptedText}$$${tag.toString('hex')}$$${iv.toString('hex')}`,
   }
 }
+
+export const register = async (
+  req: Request,
+  res: Response,
+  prisma: PrismaClient
+) => {
+  const { email, password, gender, birthDate } = req.body;
+
+  try {
+    if (!email || !password || !gender || !birthDate) {
+      res.status(400).json({ message: 'Missing required fields' });
+      return
+    }
+
+    const existingUser = await prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (existingUser) {
+      res.status(409).json({ message: 'Email is already in use' });
+      return
+    }
+
+    const saltRounds = Number.parseInt(process.env.SALT as string) || 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        gender,
+        birthDate: new Date(birthDate),
+      }
+    });
+
+    res.status(201).json({ message: "User successfully registered" });
+    return
+  } catch (error) {
+    console.error('Error registering user:', error);
+    res.status(500).json({ message: 'Internal server error' });
+    return
+  }
+};

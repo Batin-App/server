@@ -48,6 +48,12 @@ export const update = async (
     const user = await prisma.user.findUnique({
       where: {
         id: userId
+      },
+      select: {
+        id: true,
+        email: true,
+        birthDate: true,
+        gender: true
       }
     })
 

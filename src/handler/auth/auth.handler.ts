@@ -121,7 +121,7 @@ export const register = async (
     const saltRounds = Number.parseInt(process.env.SALT as string) || 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    const newUser = await prisma.user.create({
+    await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
@@ -130,7 +130,8 @@ export const register = async (
       }
     });
 
-    res.status(201).json({ message: "User successfully registered", user: newUser });
+    res.status(201).json({ message: "User successfully registered" });
+    return
   } catch (error) {
     console.error('Error registering user:', error);
     res.status(500).json({ message: 'Internal server error' });

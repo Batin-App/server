@@ -21,7 +21,7 @@ export const update = async (
         }
       }
   
-      const updatedUser = await prisma.user.update({
+      await prisma.user.update({
         where: { id: userId },
         data: {
           ...(email ? { email } : {}),
@@ -30,7 +30,8 @@ export const update = async (
         }
       });
       
-      res.status(200).json({ message: 'User successfully updated', user: updatedUser })
+      res.status(200).json({ message: 'User successfully updated' })
+      return
     } catch (error) {
       console.error('Error updating user:', error);
       res.status(500).json({ message: 'Internal server error' });
@@ -38,3 +39,18 @@ export const update = async (
     }
   };
   
+  export const getUser = async (
+    res: Response,
+    prisma: PrismaClient
+  ) => {
+    const { userId } = res.locals
+
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId
+      }
+    })
+
+    res.status(200).json({ user })
+    return
+  }

@@ -3,20 +3,21 @@ import { Request, Response } from 'express'
 import axios from 'axios'
 import { PredictionResponseInterface } from './interface'
 import { EMOTION_CLASSES } from './constant'
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 
 export const getLogs = async (
   req: Request,
   res: Response,
   prisma: PrismaClient
 ) => {
-  const date = new Date((req.query.date as string) || Date.now())
+  const date = new Date((req.query.date as string) || Date.now()).toISOString()
   const { userId } = res.locals
 
   const activities = await prisma.activity.findMany({
     where: {
-      date,
       log: {
         userId,
+        date,
       },
     },
   })
@@ -39,27 +40,25 @@ export const getLogSummary = async (
     return
   }
 
-  const logDate = new Date(date as string)
-
-  const activities = await prisma.activity.findMany({
-    where: {
-      date: logDate,
-      log: {
-        userId,
-      },
-    },
-  })
-
-  if (activities.length <= 0) {
-    res.status(404).json({
-      message: "You didn't log any activity on that date yet!",
-    })
-    return
-  }
-
-  const summedActivity = activities.map(({ description }) => description)
-  const predictionInput = summedActivity.join(' and ')
   try {
+    const logDate = new Date(date as string).toISOString()
+    const log = await prisma.log.findUniqueOrThrow({
+      where: {
+        userId_date: {
+          userId,
+          date: logDate,
+        },
+      },
+    })
+
+    const activities = await prisma.activity.findMany({
+      where: {
+        logId: log.id,
+      },
+    })
+
+    const summedActivity = activities.map(({ description }) => description)
+    const predictionInput = summedActivity.join(' and ')
     const {
       data: { predicted_class, probabilities },
     } = await axios.post<PredictionResponseInterface>(
@@ -76,7 +75,7 @@ export const getLogSummary = async (
 
     await prisma.logEmotion.create({
       data: {
-        date: logDate,
+        logId: log.id,
         predictionInput,
         probabilities: JSON.stringify(probabilities),
         ...response,
@@ -86,6 +85,14 @@ export const getLogSummary = async (
     res.status(200).json(response)
   } catch (error) {
     console.error(error)
+    if (error instanceof PrismaClientKnownRequestError) {
+      if (error.code === 'P2025') {
+        res.status(404).json({
+          message: "You didn't log any activity on that date yet!",
+        })
+        return
+      }
+    }
     res.status(500).json({
       message: 'Something went wrong on our side!',
     })
@@ -123,9 +130,12 @@ export const saveLog = async (
   try {
     await prisma.$transaction(
       async (tx) => {
-        await tx.log.upsert({
+        const log = await tx.log.upsert({
           where: {
-            date,
+            userId_date: {
+              userId,
+              date,
+            },
           },
           update: {
             userId,
@@ -134,11 +144,14 @@ export const saveLog = async (
             date,
             userId,
           },
+          select: {
+            id: true,
+          },
         })
 
         await tx.activity.create({
           data: {
-            date,
+            logId: log.id,
             description: activity,
           },
         })

@@ -42,7 +42,8 @@ model Session {
 }
 
 model Log {
-  date DateTime @db.Date() @id
+  id String @default(uuid()) @id
+  date DateTime @db.Date()
   emotion String?
   createdAt DateTime @db.Timestamptz() @default(now())
   updatedAt DateTime @db.Timestamptz() @updatedAt
@@ -50,6 +51,8 @@ model Log {
   user User @relation(fields: [userId], references: [id])
   activities Activity[]
   emotions LogEmotion[]
+
+  @@unique([userId, date])
 }
 
 model LogEmotion {
@@ -58,16 +61,16 @@ model LogEmotion {
   predictedEmotion String
   predictedClass Int
   probabilities String
-  date DateTime @db.Date()
-  log Log @relation(fields: [date], references: [date])
+  logId String
+  log Log @relation(fields: [logId], references: [id])
   createdAt DateTime @db.Timestamptz() @default(now())
   updatedAt DateTime @db.Timestamptz() @updatedAt
 }
 
 model Activity {
   id String @default(uuid()) @id
-  date DateTime @db.Date()
-  log Log @relation(fields: [date], references: [date])
+  logId String
+  log Log @relation(fields: [logId], references: [id])
   description String
   createdAt DateTime @db.Timestamptz() @default(now())
 }
@@ -76,7 +79,7 @@ model Recommendation {
   id String @default(uuid()) @id
   emotion String
   createdAt DateTime @db.Timestamptz() @default(now())
-  activities String[]
+  activities String
   userId String 
   user User @relation(fields: [userId], references: [id])
 }

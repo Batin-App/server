@@ -131,7 +131,6 @@ export const register = async (
     });
 
     res.status(201).json({ message: "User successfully registered", user: newUser });
-    return
   } catch (error) {
     console.error('Error registering user:', error);
     res.status(500).json({ message: 'Internal server error' });
